@@ -14,6 +14,9 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
     public function index(): void {
         $this->load->language('extension/mobilpay/payment/mobilpay');
 		
+		// Assign Custom js
+		$this->document->addScript('../extension/mobilpay/admin/view/js/payment/custom_admin_script.js');
+
 		//Build Custome Admin Header
         $this->document->setTitle($this->language->get('heading_title'));
 		$data['breadcrumbs'] = [];
