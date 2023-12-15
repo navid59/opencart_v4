@@ -3,7 +3,10 @@
 $_['heading_title']    = 'NETOPIA Payments'; // OK
 
 // Text
-$_['text_option_card'] = 'Online payment by any kind of Debit / Credit Card ';
-$_['text_mobilpay']    = 'Make Payable To: ';
-$_['text_address']     = 'Send To: ';
-$_['text_payment']     = 'Your order will ship ASAP.';
+$_['text_option_card'] = 'Online payment by any kind of Debit / Credit Card';   // ok
+$_['text_payment']     = 'Order registerd and redirecting to NETOPIA Payment to pay the Order fee.';    // ok
+$_['text_redirecting']     = 'Redirecting to Netopia Payment';    // ok
+
+// Errors
+
+// Messages

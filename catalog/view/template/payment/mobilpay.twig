@@ -1,1 +1,60 @@
-<h1>Hello from mobilpay Catalog</h1>
+<hr>
+
+<h1>This part is temporar</h1>
+<h2>NOT Use this form</h2>
+
+<form method="post" id="payment">
+  <input type="text" name="language" value="{{ language }}"/>
+  <input type="text" name="ntp_signature" value="{{ ntp_signature }}"/>
+  <input type="text" name="ntp_live_apikey" value="{{ ntp_live_apikey }}"/>
+  <input type="text" name="ntp_sandbox_apikey" value="{{ ntp_sandbox_apikey }}"/>
+  <div class="buttons">
+    <div class="pull-right">
+    <a onclick="$('#payment').submit();" class="btn btn-primary">{{ button_confirm }}</a>
+    </div>
+  </div>
+</form>
+
+<hr>
+<div>
+    <div class="text-end">
+        <button type="button" id="button-confirm" class="btn btn-primary">{{ button_confirm }}</button>
+    </div>
+</div>
+
+<script type="text/javascript"><!--
+$('#button-confirm').on('click', function () {
+    var element = this;
+    $.ajax({
+        url: 'index.php?route=extension/mobilpay/payment/mobilpay.confirm&language={{ language }}',
+        dataType: 'json',
+        beforeSend: function () {
+            $(element).button('loading');
+        },
+        complete: function () {
+            $(element).button('reset');
+        },
+        success: function (json) {
+            
+            if (json['error']) {
+                $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            }
+
+            // Redirect to Payment page
+            if (json['redirect']) {
+                if (json['redirect_external']) {
+                    window.location.href = json['redirect'];
+                } else {
+                    // Redirect Intern
+                    //location = json['redirect'];
+                }
+            }
+            
+            $('#alert').prepend('<div class="alert alert-info alert-dismissible"><i class="fa-solid fa-credit-card"></i> {{ text_redirecting }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+//--></script>

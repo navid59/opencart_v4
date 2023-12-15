@@ -101,15 +101,4 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
 	}
-
-    private function validate() {
-        if (!$this->user->hasPermission('modify', 'extension/payment/mobilpay')) {
-            $this->error['warning'] = $this->language->get('error_permission');
-           }
-
-        if (!$this->request->post['payment_mobilpay_signature']) {
-            $this->error['signature'] = $this->language->get('error_signature');
-        }
-        return !$this->error;
-    }
 }
