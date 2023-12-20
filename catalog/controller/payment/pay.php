@@ -17,8 +17,8 @@ class Pay extends \Opencart\System\Engine\Controller {
         $this->load->model('checkout/cart');
         
         $payRequest = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Lib\Request($this->registry);
-        print_r($payRequest);
-        echo "<hr>";
+        // print_r($payRequest);
+        // echo "<hr>";
         $payRequest->posSignature = $this->config->get('payment_mobilpay_signature');
 
         $isTestMod = $this->config->get('payment_mobilpay_test'); 
@@ -49,16 +49,16 @@ class Pay extends \Opencart\System\Engine\Controller {
          * Order Full Information
          */
         $order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
-        echo "<pre>";
-        var_dump($order_info);
-        echo "<pre>";
-        
+        // echo "<pre>ORDER NAVID";
+        // var_dump($order_info);
+        // echo "<pre>";
+
         $orderData = new \StdClass();
 
         /**
          * Set a custom Order description
          */
-        $customPaymentDescription = 'Plata pentru comanda cu ID: '.$order_info['order_id'].' | '.$order_info['invoice_prefix'].' | '.$order_info['payment_method'].' | '.$order_info['shipping_firstname'] .' '.$order_info['shipping_lastname'];
+        $customPaymentDescription = 'Plata pentru comanda cu ID: '.$order_info['order_id'].' | '.$order_info['invoice_prefix'].' | '.$order_info['payment_method']['code'].' | '.$order_info['shipping_firstname'] .' '.$order_info['shipping_lastname'];
 
         $orderData->description             = $customPaymentDescription;
         $orderData->orderID                 = $order_info['order_id'].'_'.$this->randomUniqueIdentifier();
@@ -90,7 +90,7 @@ class Pay extends \Opencart\System\Engine\Controller {
         $orderData->shipping                = new \StdClass();
         $orderData->shipping->email         = $order_info['email'];
         $orderData->shipping->phone         = $order_info['telephone'];
-        $orderData->shipping->firstName     = $order_info['shipping_firstname'] ?? $order_info['firstname'];;
+        $orderData->shipping->firstName     = $order_info['shipping_firstname'] ?? $order_info['firstname'];
         $orderData->shipping->lastName      = $order_info['shipping_lastname'] ?? $order_info['lastname'];
         $orderData->shipping->city          = $order_info['shipping_city'] ?? $order_info['payment_city'];
         $orderData->shipping->country       = 642 ;
@@ -115,16 +115,25 @@ class Pay extends \Opencart\System\Engine\Controller {
 
          /**	Add Woocomerce & Wordpress version to request*/
         $orderData->data				 	= new \StdClass();
-        $orderData->data->vesion 		    = "1.0.0";
+        $orderData->data->plugin_version 	= "1.0.0";
         $orderData->data->api 		        = "2.0";
         $orderData->data->platform 		    = "Opencart";
-        $orderData->data->version 		    = $this->getOpenCartVersion();
+        $orderData->data->platform_version 	= $this->getOpenCartVersion();
 
+        /**
+         * Assign values and generate Json
+         */
+        $payRequest->jsonRequest = $payRequest->setRequest($configData, $orderData);
+
+        /**
+         * Send Json to Start action 
+         */
+        $startResult = $payRequest->startPayment();
 
         echo "<hr>";
-        print_r($payRequest);
+        print_r($startResult);
         echo "<hr>";
-        print_r($orderData);
+        // print_r($orderData);
 
         echo 
        

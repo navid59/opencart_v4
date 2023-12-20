@@ -79,8 +79,10 @@ class Request extends Start {
                                     'available' => [(int) 0]
                             ),
             'data'       => [
-                'wordpress' => $orderData->data->wordpress,
-                'wooCommerce' => $orderData->data->wooCommerce
+                'plugin_version' => $orderData->data->plugin_version,
+                'api' => $orderData->data->api,
+                'platform' => $orderData->data->platform,
+                'platform_version' => $orderData->data->platform_version
             ]
         );
         return $order;
@@ -112,6 +114,8 @@ class Request extends Start {
     //   echo "<hr>";
     //   echo $this->posSignature;
     //   echo "</pre>";
+
+    //   die("xxxx");
       $result = $this->sendRequest($this->jsonRequest);
       return($result);
     }    
