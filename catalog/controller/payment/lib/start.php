@@ -1,5 +1,7 @@
 <?php 
-class Start {
+namespace Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Lib;
+
+class Start extends \Opencart\System\Engine\Controller {
     public $posSignature;
     public $notifyUrl;
     public $redirectUrl;
@@ -11,6 +13,8 @@ class Start {
     function __construct(){
         //
     }
+
+    
 
         // Send request json
         protected function sendRequest($jsonStr) {

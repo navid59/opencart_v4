@@ -58,10 +58,10 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
              * Make request to pay and return payment URL
              */
 
-			// Create an instance of the new controller
+			// Create an instance of the PAY controller
 			$myController = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Pay($this->registry);
 
-			// Call the index method of the new controller
+			// Call the index method of the Pay controller
 			$paymentURL = $myController->index();
 
 			$json['redirect'] = $paymentURL; //'https://www.example.com/success-page';
@@ -71,4 +71,12 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
 	}
+
+	/**
+     * Call Back is the IPN
+	 * http://localhost/open_v4.0.2/index.php?route=extension/mobilpay/payment/mobilpay.callback&language=en-gb
+     */
+    public function callback() {
+        echo "This IS IPN";
+    }
 }

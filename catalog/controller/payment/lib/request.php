@@ -1,14 +1,15 @@
 <?php 
-include_once('start.php');
+namespace Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Lib;
+// include_once('start.php');
 
 class Request extends Start {
     public $authenticationToken;
     public $ntpID;
     public $jsonRequest;
 
-    function __construct(){
-        parent::__construct();
-    }
+    // function __construct(){
+    //     parent::__construct();
+    // }
 
     public function setConfig($configData) {
         $config = array(
