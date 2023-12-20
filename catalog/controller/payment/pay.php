@@ -51,9 +51,6 @@ class Pay extends \Opencart\System\Engine\Controller {
          * Order Full Information
          */
         $order_info = $this->model_checkout_order->getOrder($this->session->data['order_id']);
-        // echo "<pre>ORDER NAVID";
-        // var_dump($order_info);
-        // echo "<pre>";
 
         $orderData = new \StdClass();
 

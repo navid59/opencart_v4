@@ -13,9 +13,10 @@ class Request extends Start {
 
     public function setConfig($configData) {
         $config = array(
-            'emailTemplate' => (string) isset($configData['emailTemplate']) ? $configData['emailTemplate'] : 'confirm',
+            'emailTemplate' => (string) isset($configData['emailTemplate']) ? $configData['emailTemplate'] : '',
             'notifyUrl'     => (string) $configData['notifyUrl'],
             'redirectUrl'   => (string) $configData['redirectUrl'],
+            'cancelUrl'     => (string) $configData['cancelUrl'],
             'language'      => (string) isset($configData['language']) ? $configData['language'] : 'RO'
         );
         return $config;
