@@ -11,7 +11,9 @@ class Pay extends \Opencart\System\Engine\Controller {
          * - return Payment URL
          */
         
-        // 
+        
+        // Load Language
+        $this->load->language('extension/mobilpay/payment/mobilpay');
 
         // Load the Cart model
         $this->load->model('checkout/cart');
@@ -37,7 +39,7 @@ class Pay extends \Opencart\System\Engine\Controller {
             'emailTemplate' => "",
             'notifyUrl'     => $this->url->link('extension/mobilpay/payment/mobilpay.callback'),
             'redirectUrl'   => $this->url->link('extension/mobilpay/payment/pay.redirect'),
-            'redirectUrl'   => $this->url->link('extension/mobilpay/payment/pay.cancel'),
+            'cancelUrl'   => $this->url->link('extension/mobilpay/payment/pay.cancel'),
             'language'      => "RO"
             ];
 
@@ -113,7 +115,7 @@ class Pay extends \Opencart\System\Engine\Controller {
 
          $orderData->products                = $this->getCartSummary($products); // It's JSON
 
-         /**	Add Woocomerce & Wordpress version to request*/
+         /**	Add Api & CRM version to request*/
         $orderData->data				 	= new \StdClass();
         $orderData->data->plugin_version 	= "1.0.0";
         $orderData->data->api 		        = "2.0";
@@ -130,16 +132,73 @@ class Pay extends \Opencart\System\Engine\Controller {
          */
         $startResult = $payRequest->startPayment();
 
-        echo "<hr>";
-        print_r($startResult);
-        echo "<hr>";
-        // print_r($orderData);
+        ////////////////
+        // /**
+        //  * Result of start action is in jason format
+        //  * get PaymentURL & do redirect
+        //  */
+        $responseArr = [];
+        $resultObj = json_decode($startResult);
+        
+        switch($resultObj->status) {
+            case 0:
+                if(($resultObj->code == 401) && ($resultObj->data->code == 401)) {
+                    $errorMsg = $this->language->get('error_redirect_code_401');
+                } elseif (($resultObj->code == 400) && ($resultObj->data->code == 99)) {
+                    $errorMsg = $this->language->get('error_redirect_code_99');
+                }
+                $errorMsg  .= $this->language->get('error_redirect');
 
-        echo 
+                $responseArr['status'] = $resultObj->status; 
+                $responseArr['code'] = $resultObj->data->code; 
+                $responseArr['msg'] = $errorMsg;
+                $responseArr['url'] = '';
+            break;
+            case 1:
+            if ($resultObj->code == 200 &&  !is_null($resultObj->data->payment->paymentURL)) {
+                $errorMsg  = $this->language->get('message_redirect');
+
+                $responseArr['status'] = 1; 
+                $responseArr['code'] = $resultObj->data->error->code; 
+                $responseArr['msg'] = $errorMsg;
+                $responseArr['url'] = $resultObj->data->payment->paymentURL;
+                
+            } else {
+                $responseArr['status'] = 0; 
+                $responseArr['code'] = ''; 
+                $responseArr['msg'] = $resultObj->message;
+                $responseArr['url'] = '';
+            }
+            break;
+            default:
+            $errorMsg  = $this->language->get('error_redirect');
+            $errorMsg  .= $this->language->get('error_redirect_problem_unknown');
+
+            $responseArr['status'] = 0; 
+            $responseArr['code'] = ''; 
+            $responseArr['msg'] = $errorMsg;
+            $responseArr['url'] = '';
+            break;
+        }
+        ////////////////
+
        
-        die();
+        
+        //$json = $responseArr;
+        //return $json;
 
-        return "http://mobilpay.ro";
+        return $responseArr;
+
+        // echo "<hr>";
+        // print_r($startResult);
+        // echo "<hr>";
+        // // print_r($orderData);
+
+        // echo 
+       
+        // die();
+
+        // return "http://mobilpay.ro";
     }
 
    

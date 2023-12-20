@@ -59,12 +59,13 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
              */
 
 			// Create an instance of the PAY controller
-			$myController = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Pay($this->registry);
+			$payController = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Pay($this->registry);
 
 			// Call the index method of the Pay controller
-			$paymentURL = $myController->index();
+			$paymentResult = $payController->index();
 
-			$json['redirect'] = $paymentURL; //'https://www.example.com/success-page';
+
+			$json['paymentResult'] = $paymentResult;
             $json['redirect_external'] = true;
 		}
 

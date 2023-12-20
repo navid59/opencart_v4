@@ -14,7 +14,8 @@
     </div>
   </div>
 </form>
-
+<hr>
+<div id="ntpRedirectMsg">TEST Redirect Nessage</div>
 <hr>
 <div>
     <div class="text-end">
@@ -35,22 +36,26 @@ $('#button-confirm').on('click', function () {
             $(element).button('reset');
         },
         success: function (json) {
-            
-            if (json['error']) {
-                $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
-            }
+          
+        console.log(json.paymentResult);
 
-            // Redirect to Payment page
-            if (json['redirect']) {
-                if (json['redirect_external']) {
-                    window.location.href = json['redirect'];
-                } else {
-                    // Redirect Intern
-                    //location = json['redirect'];
+        if (json.paymentResult.status == 0) {
+                $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json.paymentResult.msg + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            } else if (json.paymentResult.status == 1){
+                // Redirect to Payment page
+                if (json.paymentResult.url) {
+                    if (json.redirect_external) {
+                        window.location.href = json.paymentResult.url;
+                    } else {
+                        // Redirect Intern
+                        //location = json.paymentResult.url;
+                    }
                 }
+
+                $('#alert').prepend('<div class="alert alert-info alert-dismissible"><i class="fa-solid fa-credit-card"></i> ' + json.paymentResult.msg + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            } else {
+                $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fa-solid fa-circle-exclamation"></i> ' + json.paymentResult.msg + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
             }
-            
-            $('#alert').prepend('<div class="alert alert-info alert-dismissible"><i class="fa-solid fa-credit-card"></i> {{ text_redirecting }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
         },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
