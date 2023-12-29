@@ -65,7 +65,6 @@ class IPN extends Request{
      *  - a Json
      */
     public function verifyIPN() {
-
         /**
         * Define IPN response, 
         * will update base on payment status
@@ -200,7 +199,7 @@ class IPN extends Request{
             try
                 {
                 $objIpn = json_decode($payload, false);
-                $ipnMsg = $objIpn->payment->message ?? ''; // Message from API, like reason of Decline
+                $ipnMsg = $objIpn->payment->message ?? ''; // Message from API, like reason of Decline                
                 }
             catch(\Exception $e)
                 {
@@ -412,18 +411,25 @@ class IPN extends Request{
                 $outputData['errorMessage']	= "Unknown. ".$ipnMsg;
                 }
             
-        } catch(\Exception $e)
-        {
-            $outputData['errorType']	= self::ERROR_TYPE_PERMANENT;
-            $outputData['errorCode']	= ($e->getCode() != 0) ? $e->getCode() : self::E_VERIFICATION_FAILED_GENERAL;
-            $outputData['errorMessage']	= $e->getMessage();
-            
-            // $setRealTimeLog = [
-            //                 "IPN - Error"  =>  "Hash Data is not matched with subject",
-            //                 "ipnMsgError"  => 'ERROR_TYPE_PERMANENT -> E_VERIFICATION_FAILED_GENERAL'
-            //                 ];
-            // hear, can make Log for $setRealTimeLog;
-        }
+            } catch(\Exception $e)
+            {
+                $outputData['errorType']	= self::ERROR_TYPE_PERMANENT;
+                $outputData['errorCode']	= ($e->getCode() != 0) ? $e->getCode() : self::E_VERIFICATION_FAILED_GENERAL;
+                $outputData['errorMessage']	= $e->getMessage();
+                
+                // $setRealTimeLog = [
+                //                 "IPN - Error"  =>  "Hash Data is not matched with subject",
+                //                 "ipnMsgError"  => 'ERROR_TYPE_PERMANENT -> E_VERIFICATION_FAILED_GENERAL'
+                //                 ];
+                // hear, can make Log for $setRealTimeLog;
+            }
+
+            /**
+             * Raw Data recived from NETOPIA IPN
+             * To use some of them for another scope
+             */
+            $outputData['rawData']['orderID'] = $objIpn->order->orderID;
+            $outputData['rawData']['ntpID'] = $objIpn->payment->ntpID;
 
         return $outputData;
     }

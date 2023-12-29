@@ -34,15 +34,6 @@ class Pay extends \Opencart\System\Engine\Controller {
          * Prepare json for start action
          */
 
-        /** - Config section  */
-        $configData = [
-            'emailTemplate' => "",
-            'notifyUrl'     => $this->url->link('extension/mobilpay/payment/mobilpay.callback'),
-            'redirectUrl'   => $this->url->link('extension/mobilpay/payment/pay.redirect'),
-            'cancelUrl'   => $this->url->link('extension/mobilpay/payment/pay.cancel'),
-            'language'      => "RO"
-            ];
-
         // /** - 3DS section  */
         // $threeDSecusreData =  array(); 
 
@@ -119,6 +110,16 @@ class Pay extends \Opencart\System\Engine\Controller {
         $orderData->data->platform 		    = "Opencart";
         $orderData->data->platform_version 	= $this->getOpenCartVersion();
 
+
+        /** - Config section  */
+        $configData = [
+            'emailTemplate' => "",
+            'notifyUrl'     => $this->url->link('extension/mobilpay/payment/mobilpay.callback'),
+            'redirectUrl'   => $this->url->link('extension/mobilpay/payment/pay.redirect'),
+            'cancelUrl'   => $this->url->link('extension/mobilpay/payment/pay.cancel', 'id='.$orderData->orderID, true),
+            'language'      => "RO"
+            ];
+
         /**
          * Assign values and generate Json
          */
@@ -154,12 +155,10 @@ class Pay extends \Opencart\System\Engine\Controller {
             case 1:
             if ($resultObj->code == 200 &&  !is_null($resultObj->data->payment->paymentURL)) {
                 $errorMsg  = $this->language->get('message_redirect');
-
                 $responseArr['status'] = 1; 
                 $responseArr['code'] = $resultObj->data->error->code; 
                 $responseArr['msg'] = $errorMsg;
-                $responseArr['url'] = $resultObj->data->payment->paymentURL;
-                
+                $responseArr['url'] = $resultObj->data->payment->paymentURL;                
             } else {
                 $responseArr['status'] = 0; 
                 $responseArr['code'] = ''; 
@@ -177,25 +176,8 @@ class Pay extends \Opencart\System\Engine\Controller {
             $responseArr['url'] = '';
             break;
         }
-        ////////////////
-
-       
         
-        //$json = $responseArr;
-        //return $json;
-
         return $responseArr;
-
-        // echo "<hr>";
-        // print_r($startResult);
-        // echo "<hr>";
-        // // print_r($orderData);
-
-        // echo 
-       
-        // die();
-
-        // return "http://mobilpay.ro";
     }
 
    
@@ -205,7 +187,32 @@ class Pay extends \Opencart\System\Engine\Controller {
      * Must redirect to the Cart page
      */
     public function cancel() {
-		echo "This is cancel Payment";
+		echo "This is cancel Payment/n";
+        echo "<pre>";
+        echo "Order Id is ".print_r($_GET,true);
+        echo "</pre>";
+
+        $this->load->language('extension/mobilpay/payment/mobilpay');
+
+		$json = [];
+
+		if (!isset($this->session->data['order_id'])) {
+			$json['error'] = $this->language->get('error_order');
+		}
+
+		if (!isset($this->session->data['payment_method']) || $this->session->data['payment_method']['code'] != 'mobilpay.mobilpay') {
+			$json['error'] = $this->language->get('error_payment_method');
+		}
+
+		if (!$json) {
+			$comment = $this->language->get('message_test_navid') . "\n";
+
+			$this->load->model('checkout/order');
+
+			$this->model_checkout_order->addHistory($this->session->data['order_id'], $this->config->get('payment_mobilpay_order_status_id'), $comment, false);
+
+			
+		}
 	}
 
     /**
@@ -213,7 +220,14 @@ class Pay extends \Opencart\System\Engine\Controller {
      * Must redirect to success page / Error Page
      */
     public function redirect() {
-		echo "This is Success / Error";
+		echo "This is the REdirect URL for 3DS, no need to implimeted in this case/n";
+		echo "TEST TEST TEST /n";
+        $this->load->model('localisation/order_status');
+        $orderStatuses = $this->model_localisation_order_status->getOrderStatuses();
+
+        foreach ($orderStatuses as $orderStatus) {
+            echo 'Order Status ID: ' . $orderStatus['order_status_id'] . ', Name: ' . $orderStatus['name'] . '<br>';
+        }
 	}
 
     /**

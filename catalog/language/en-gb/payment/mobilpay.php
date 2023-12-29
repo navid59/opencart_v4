@@ -19,3 +19,4 @@ $_['error_redirect_code_99'] = 'Sa pare ca datele de POS introduse ( POS ) nu su
 
 // Messages
 $_['message_redirect'] = 'Iti multumim pentru comanda. Te redirectionam catre NETOPIA payments pentru plata';
+$_['message_test_navid'] = 'Test Navid Test Navid - Comment';
