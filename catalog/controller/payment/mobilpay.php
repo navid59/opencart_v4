@@ -7,7 +7,20 @@ namespace Opencart\Catalog\Controller\Extension\Mobilpay\Payment;
  * @package Opencart\Catalog\Controller\Extension\Mobilpay\Payment
  */
 class Mobilpay extends \Opencart\System\Engine\Controller {
-/**
+    /**
+     * Order Status Constants in OC
+     */
+    const OC_ORDER_STATUS_PENDING = 1;
+    const OC_ORDER_STATUS_PROCESSING = 2;
+    const OC_ORDER_STATUS_COMPLETE = 5;
+    const OC_ORDER_STATUS_CANCELLED = 7;
+    const OC_ORDER_STATUS_DENIED = 8;
+    const OC_ORDER_STATUS_FAILED = 10;
+    const OC_ORDER_STATUS_REFUNDED = 11;
+    const OC_ORDER_STATUS_PROCESSED = 15;
+
+
+    /**
 	 * @return string
 	 */
 	public function index(): string {
@@ -95,17 +108,28 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
         $ntpIpn->publicKeyStr = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy6pUDAFLVul4y499gz1P\ngGSvTSc82U3/ih3e5FDUs/F0Jvfzc4cew8TrBDrw7Y+AYZS37D2i+Xi5nYpzQpu7\nryS4W+qvgAA1SEjiU1Sk2a4+A1HeH+vfZo0gDrIYTh2NSAQnDSDxk5T475ukSSwX\nL9tYwO6CpdAv3BtpMT5YhyS3ipgPEnGIQKXjh8GMgLSmRFbgoCTRWlCvu7XOg94N\nfS8l4it2qrEldU8VEdfPDfFLlxl3lUoLEmCncCjmF1wRVtk4cNu+WtWQ4mBgxpt0\ntX2aJkqp4PV3o5kI4bqHq/MS7HVJ7yxtj/p8kawlVYipGsQj3ypgltQ3bnYV/LRq\n8QIDAQAB\n-----END PUBLIC KEY-----\n";
         $ipnResponse = $ntpIpn->verifyIPN();
         
-        //$this->load->model('checkout/order');
-        //$order_info = $this->model_checkout_order->getOrder(29);
-        //print_r($order_info); 
+        /**
+         * Add Order History & change status
+         */
+        $expStr = explode("_", $ipnResponse['rawData']['orderID']);
+        $ocOrderID = $expStr[0]; 
         
-        // $expStr = explode("_", $objIpn->order->orderID);
-        // $ocOrderID = $expStr[0]; 
+        $this->load->model('checkout/order');
+        $order_info = $this->model_checkout_order->getOrder($ocOrderID);
+        
+        // Add payment result to history
+        $this->model_checkout_order->addHistory($ocOrderID, $order_info['order_status_id'], $ipnResponse['errorMessage']);     
+        
 
         /**
          * IPN Output
          */
-        echo json_encode($ipnResponse);
+        // echo json_encode($ipnResponse);
+        echo json_encode([
+            "errorType" => $ipnResponse['errorType'],
+            "errorCode" => $ipnResponse['errorCode'],
+            "errorMessage" => $ipnResponse['errorMessage']
+        ]);
         die();
     }
 }

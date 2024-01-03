@@ -219,7 +219,29 @@ class Pay extends \Opencart\System\Engine\Controller {
      * Redirect
      * Must redirect to success page / Error Page
      */
-    public function redirect() {
+    public function test() {
+
+        echo "<h1>test</h1>";
+        
+
+        $order_id = 30; // Replace with the actual order ID
+        $order_status_id = 5; // Replace with the desired order status ID
+        $comment = 'Order status updated programmatically'; // Replace with your comment
+        // $order_info = $this->model_checkout_order->getOrder($order_id);
+
+        
+    //     $this->load->model('checkout/order');
+    //     $this->model_checkout_order->addOrderHistory($order_id, $order_status_id, $comment,1);
+    // //    $getTotal = $this->model_checkout_order->getTotals($order_id);
+    // //    print_r($getTotal);
+
+        $this->load->model('checkout/order');
+    	$this->model_checkout_order->addHistory($order_id, $order_status_id, $comment, true);
+
+
+        echo "<hr>";
+
+
 		echo "This is the REdirect URL for 3DS, no need to implimeted in this case/n";
 		echo "TEST TEST TEST /n";
         $this->load->model('localisation/order_status');

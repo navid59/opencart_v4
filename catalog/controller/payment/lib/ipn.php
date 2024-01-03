@@ -416,12 +416,6 @@ class IPN extends Request{
                 $outputData['errorType']	= self::ERROR_TYPE_PERMANENT;
                 $outputData['errorCode']	= ($e->getCode() != 0) ? $e->getCode() : self::E_VERIFICATION_FAILED_GENERAL;
                 $outputData['errorMessage']	= $e->getMessage();
-                
-                // $setRealTimeLog = [
-                //                 "IPN - Error"  =>  "Hash Data is not matched with subject",
-                //                 "ipnMsgError"  => 'ERROR_TYPE_PERMANENT -> E_VERIFICATION_FAILED_GENERAL'
-                //                 ];
-                // hear, can make Log for $setRealTimeLog;
             }
 
             /**
