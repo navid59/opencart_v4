@@ -1,4 +1,5 @@
-<?php 
+<?php
+namespace Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Lib;
 class Status extends Start{
     public $ntpID;
     public $orderID;
@@ -79,6 +80,14 @@ class Status extends Start{
                                 'status'  => 0,
                                 'code'    => $http_code,
                                 'message' => "You send Bad Request to /operation/status",
+                                'data'    => json_decode($result)
+                            );
+                            break;
+                        case 401:  # Not Allowed
+                            $arr = array(
+                                'status'  => 0,
+                                'code'    => $http_code,
+                                'message' => "You not Allowed to get status",
                                 'data'    => json_decode($result)
                             );
                             break;
