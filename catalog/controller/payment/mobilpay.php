@@ -64,7 +64,7 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
 
 			$this->load->model('checkout/order');
 
-			$this->model_checkout_order->addHistory($this->session->data['order_id'], $this->config->get('payment_mobilpay_order_status_id'), $comment, false);
+			$this->model_checkout_order->addHistory($this->session->data['order_id'], self::OC_ORDER_STATUS_PENDING , $comment, false);
 
 			// $json['redirect'] = $this->url->link('checkout/success', 'language=' . $this->config->get('config_language'), true);
             /**
@@ -111,9 +111,7 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
         /**
          * Add Order History & change status
          */
-        $expStr = explode("_", $ipnResponse['rawData']['orderID']);
-        $ocOrderID = $expStr[0]; 
-        
+        $ocOrderID = $this->getRealOrderID($ipnResponse['rawData']['orderID']); 
         $this->load->model('checkout/order');
         $order_info = $this->model_checkout_order->getOrder($ocOrderID);
         
@@ -142,19 +140,24 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
      */
     public function statusPayment($orderID, $ntpID) {
         /**
+         * Load necessary OC lib
+         */  
+        $this->load->language('extension/mobilpay/payment/mobilpay');
+        $this->load->model('checkout/order');
+
+        /**
          * Defined Status payment
-         */
-        
+         */        
         $ntpStatus = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Lib\Status($this->registry);
         $ntpStatus->posSignature = $this->config->get('payment_mobilpay_signature');
                 
         $isTestMod = $this->config->get('payment_mobilpay_test'); 
         if($isTestMod) {
             $ntpStatus->isLive = false;
-            $ntpStatus->apiKey = nl2br($this->config->get('payment_mobilpay_sandbox_apikey'));
+            $ntpStatus->apiKey = $this->config->get('payment_mobilpay_sandbox_apikey');
         } else {
             $ntpStatus->isLive = true;
-            $ntpStatus->apiKey = nl2br($this->config->get('payment_mobilpay_live_apikey'));
+            $ntpStatus->apiKey = $this->config->get('payment_mobilpay_live_apikey');
         }
         
         $ntpStatus->ntpID = $ntpID;
@@ -168,9 +171,23 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
 		/** Get Order Status */
 		$statusRespunse = $ntpStatus->getStatus($orderStatusJson);
 
-        //  print_r($ntpStatus);
-        //  print_r($orderStatusJson);
-         print_r($statusRespunse);
+        $statusRespunseObj = json_decode($statusRespunse);
+         
+        switch ($statusRespunseObj->data->payment->status) {
+            case 3:
+            case 5:
+                // change order status and add history
+                $comment = $this->language->get('text_payment_paid') . "\n";
+                
+                $this->model_checkout_order->addHistory($this->getRealOrderID($orderID), $this->config->get('payment_mobilpay_order_status_id'), $comment);  
+                break;
+        } 
+    }
+
+    public function getRealOrderID($ntpOrderID) {
+        $expStr = explode("_", $ntpOrderID);
+        $ocOrderID = $expStr[0]; 
+        return $ocOrderID;
     }
 
 }

@@ -3,9 +3,13 @@
 $_['heading_title']    = 'NETOPIA Payments'; // OK
 
 // Text
-$_['text_option_card'] = 'Online payment by any kind of Debit / Credit Card';   // ok
-$_['text_payment']     = 'Order registerd and redirecting to NETOPIA Payment to pay the Order fee.';    // ok
-$_['text_redirecting']     = 'Redirecting to Netopia Payment';    // ok
+$_['text_option_card']      = 'Online payment by any kind of Debit / Credit Card';   // ok
+$_['text_payment']          = 'Order registerd and redirecting to NETOPIA Payment to pay the Order fee.';    // ok
+$_['text_payment_paid']     = 'Order is paid.';    // ok
+$_['text_payment_pendding'] = 'Order status change to pendding.';    // ok
+$_['text_payment_failed']   = 'Order status change to failed.';    // ok
+$_['text_payment_denied']   = 'Order status change to denied.';    // ok
+$_['text_redirecting']      = 'Redirecting to Netopia Payment';    // ok
 
 // Errors
 $_['error_redirect'] = 'Imi pare rau, nu putem sa redirectionam in pagina de plata NETOPIA payments';

@@ -48,15 +48,17 @@ class Status extends Start{
             curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
         
             // Set the content type to application/json
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type : application/json'));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization : $this->apiKey"));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Content-Type: application/json',
+                "Authorization: $this->apiKey"
+            ));
         
             // Return response instead of outputting
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         
             // Execute the POST request
             $result = curl_exec($ch);
-            //   die(print_r($result));
+
             if (!curl_errno($ch)) {
                     switch ($http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE)) {
                         case 200:  # OK                                    
