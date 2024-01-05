@@ -101,4 +101,11 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
 		$this->response->addHeader('Content-Type: application/json');
 		$this->response->setOutput(json_encode($json));
 	}
+
+	/**
+     * Add ntpID field to Order table
+     */
+    public function install() {
+        $this->db->query("ALTER TABLE `" . DB_PREFIX . "order` ADD COLUMN ntpID VARCHAR(50) DEFAULT NULL COMMENT 'NETOPIA Payments ID';");
+	}
 }

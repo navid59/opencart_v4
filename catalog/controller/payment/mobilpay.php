@@ -121,6 +121,7 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
         // Get Payment Status
         $this->statusPayment($ipnResponse['rawData']['orderID'], $ipnResponse['rawData']['ntpID']);
 
+
         /**
          * IPN Output
          */

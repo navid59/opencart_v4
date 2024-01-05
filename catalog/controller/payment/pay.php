@@ -19,15 +19,13 @@ class Pay extends \Opencart\System\Engine\Controller {
         $this->load->model('checkout/cart');
         
         $payRequest = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Lib\Request($this->registry);
-        // print_r($payRequest);
-        // echo "<hr>";
         $payRequest->posSignature = $this->config->get('payment_mobilpay_signature');
 
         $isTestMod = $this->config->get('payment_mobilpay_test'); 
         if($isTestMod) {
-            $payRequest->apiKey = nl2br($this->config->get('payment_mobilpay_sandbox_apikey'));
+            $payRequest->apiKey = $this->config->get('payment_mobilpay_sandbox_apikey');
         } else {
-            $payRequest->apiKey = nl2br($this->config->get('payment_mobilpay_live_apikey'));
+            $payRequest->apiKey = $this->config->get('payment_mobilpay_live_apikey');
         }
         
         /**
@@ -187,69 +185,149 @@ class Pay extends \Opencart\System\Engine\Controller {
      * Must redirect to the Cart page
      */
     public function cancel() {
-		echo "This is cancel Payment/n";
-        echo "<pre>";
-        echo "Order Id is ".print_r($_GET,true);
-        echo "</pre>";
+        
+        if (!empty($_GET)) {
+            if (isset($_GET['id'])) {
+                // Get order info
+                $ntpExtention = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Mobilpay($this->registry);
+                $ocOrderID = $ntpExtention->getRealOrderID($_GET['id']); 
+                echo "<pre>";
+                // var_dump($this->registry);
+                var_dump( $ocOrderID);
+                echo "</pre>";
+            } else {
+                echo "Order ID is missing.";
+            }
+        } else {
+            echo "GET request is empty.";
+        }
 
-        $this->load->language('extension/mobilpay/payment/mobilpay');
-
-		$json = [];
-
-		if (!isset($this->session->data['order_id'])) {
-			$json['error'] = $this->language->get('error_order');
-		}
-
-		if (!isset($this->session->data['payment_method']) || $this->session->data['payment_method']['code'] != 'mobilpay.mobilpay') {
-			$json['error'] = $this->language->get('error_payment_method');
-		}
-
-		if (!$json) {
-			$comment = $this->language->get('message_test_navid') . "\n";
-
-			$this->load->model('checkout/order');
-
-			$this->model_checkout_order->addHistory($this->session->data['order_id'], $this->config->get('payment_mobilpay_order_status_id'), $comment, false);
-
-			
-		}
+        
+		// $this->failur();
+		// $this->success();
+        
 	}
 
     /**
-     * Redirect
-     * Must redirect to success page / Error Page
+     * Failur Page
+     */
+    public function failur() {
+        // Load Language
+        $this->load->language('extension/mobilpay/payment/mobilpay');
+
+		$this->document->setTitle($this->language->get('ntp_failure_heading_title'));
+        $data['ntp_return_heading_title'] = $this->language->get('ntp_failure_heading_title');
+
+		$data['breadcrumbs'] = [];
+
+		$data['breadcrumbs'][] = [
+			'text' => $this->language->get('ntp_failure_text_home'),
+			'href' => $this->url->link('common/home', 'language=' . $this->config->get('config_language'))
+		];
+
+		$data['breadcrumbs'][] = [
+			'text' => $this->language->get('ntp_failure_text_basket'),
+			'href' => $this->url->link('checkout/cart', 'language=' . $this->config->get('config_language'))
+		];
+
+		$data['breadcrumbs'][] = [
+			'text' => $this->language->get('ntp_failure_text_checkout'),
+			'href' => $this->url->link('checkout/checkout', 'language=' . $this->config->get('config_language'))
+		];
+
+		$data['breadcrumbs'][] = [
+			'text' => $this->language->get('ntp_failure_text_failure'),
+			'href' => $this->url->link('checkout/failure', 'language=' . $this->config->get('config_language'))
+		];
+
+		$data['text_message'] = sprintf($this->language->get('ntp_failure_text_message'), $this->url->link('information/contact', 'language=' . $this->config->get('config_language')));
+
+		$data['continue'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
+
+		$data['column_left'] = $this->load->controller('common/column_left');
+		$data['column_right'] = $this->load->controller('common/column_right');
+		$data['content_top'] = $this->load->controller('common/content_top');
+		$data['content_bottom'] = $this->load->controller('common/content_bottom');
+		$data['footer'] = $this->load->controller('common/footer');
+		$data['header'] = $this->load->controller('common/header');
+
+        $this->response->setOutput($this->load->view('extension/mobilpay/payment/returnPage', $data));
+    }
+
+    /**
+     * Success Page
+     */
+    public function success() {
+        // Load Language
+        $this->load->language('extension/mobilpay/payment/mobilpay');
+
+		if (isset($this->session->data['order_id'])) {
+			$this->cart->clear();
+
+			unset($this->session->data['order_id']);
+			unset($this->session->data['payment_method']);
+			unset($this->session->data['payment_methods']);
+			unset($this->session->data['shipping_method']);
+			unset($this->session->data['shipping_methods']);
+			unset($this->session->data['comment']);
+			unset($this->session->data['agree']);
+			unset($this->session->data['coupon']);
+			unset($this->session->data['reward']);
+			unset($this->session->data['voucher']);
+			unset($this->session->data['vouchers']);
+		}
+
+		$this->document->setTitle($this->language->get('ntp_success_heading_title'));
+
+        $data['ntp_return_heading_title'] = $this->language->get('ntp_success_heading_title');
+
+		$data['breadcrumbs'] = [];
+
+		$data['breadcrumbs'][] = [
+			'text' => $this->language->get('ntp_success_text_home'),
+			'href' => $this->url->link('common/home', 'language=' . $this->config->get('config_language'))
+		];
+
+		$data['breadcrumbs'][] = [
+			'text' => $this->language->get('ntp_success_text_basket'),
+			'href' => $this->url->link('checkout/cart', 'language=' . $this->config->get('config_language'))
+		];
+
+		$data['breadcrumbs'][] = [
+			'text' => $this->language->get('ntp_success_text_checkout'),
+			'href' => $this->url->link('checkout/checkout', 'language=' . $this->config->get('config_language'))
+		];
+
+		$data['breadcrumbs'][] = [
+			'text' => $this->language->get('ntp_success_text_success'),
+			'href' => $this->url->link('checkout/success', 'language=' . $this->config->get('config_language'))
+		];
+
+		if ($this->customer->isLogged()) {
+			$data['text_message'] = sprintf($this->language->get('ntp_success_text_customer'), $this->url->link('account/account', 'language=' . $this->config->get('config_language') .  '&customer_token=' . $this->session->data['customer_token']), $this->url->link('account/order', 'language=' . $this->config->get('config_language') .  '&customer_token=' . $this->session->data['customer_token']), $this->url->link('account/download', 'language=' . $this->config->get('config_language') .  '&customer_token=' . $this->session->data['customer_token']), $this->url->link('information/contact', 'language=' . $this->config->get('config_language')));
+		} else {
+			$data['text_message'] = sprintf($this->language->get('ntp_success_text_guest'), $this->url->link('information/contact', 'language=' . $this->config->get('config_language')));
+		}
+
+		$data['continue'] = $this->url->link('common/home', 'language=' . $this->config->get('config_language'));
+
+		$data['column_left'] = $this->load->controller('common/column_left');
+		$data['column_right'] = $this->load->controller('common/column_right');
+		$data['content_top'] = $this->load->controller('common/content_top');
+		$data['content_bottom'] = $this->load->controller('common/content_bottom');
+		$data['footer'] = $this->load->controller('common/footer');
+		$data['header'] = $this->load->controller('common/header');
+
+		$this->response->setOutput($this->load->view('extension/mobilpay/payment/returnPage', $data));
+        
+	}
+
+    /**
+     * Test
+     * Will be delete
      */
     public function test() {
-
-        echo "<h1>test</h1>";
-        
-
-        $order_id = 30; // Replace with the actual order ID
-        $order_status_id = 5; // Replace with the desired order status ID
-        $comment = 'Order status updated programmatically'; // Replace with your comment
-        // $order_info = $this->model_checkout_order->getOrder($order_id);
-
-        
-    //     $this->load->model('checkout/order');
-    //     $this->model_checkout_order->addOrderHistory($order_id, $order_status_id, $comment,1);
-    // //    $getTotal = $this->model_checkout_order->getTotals($order_id);
-    // //    print_r($getTotal);
-
-        $this->load->model('checkout/order');
-    	$this->model_checkout_order->addHistory($order_id, $order_status_id, $comment, true);
-
-
-        echo "<hr>";
-
-
-		echo "This is the REdirect URL for 3DS, no need to implimeted in this case/n";
-		echo "TEST TEST TEST /n";
-        $this->load->model('localisation/order_status');
-        $orderStatuses = $this->model_localisation_order_status->getOrderStatuses();
-
-        foreach ($orderStatuses as $orderStatus) {
-            echo 'Order Status ID: ' . $orderStatus['order_status_id'] . ', Name: ' . $orderStatus['name'] . '<br>';
-        }
+        $this->db->query("ALTER TABLE `" . DB_PREFIX . "order` ADD COLUMN ntpID VARCHAR(50) DEFAULT NULL COMMENT 'NETOPIA Payments ID';");
 	}
 
     /**
