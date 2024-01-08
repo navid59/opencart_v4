@@ -27,12 +27,14 @@ $_['message_redirect'] = 'Iti multumim pentru comanda. Te redirectionam catre NE
 // Payment failure
 $_['ntp_failure_heading_title'] = 'Failed Payment!';
 $_['ntp_failure_text_basket']   = 'Shopping Cart';
+$_['ntp_failure_text_home'] = 'Shopping Cart';
 $_['ntp_failure_text_checkout'] = 'Checkout';
 $_['ntp_failure_text_failure']  = 'Failed Payment';
 $_['ntp_failure_text_message']  = '<p>There was a problem processing your payment and the order did not complete.</p>
 
 <p>Possible reasons are:</p>
 <ul>
+  <li>Cancel payment</li>
   <li>Insufficient funds</li>
   <li>Verification failed</li>
 </ul>
@@ -45,6 +47,7 @@ $_['ntp_failure_text_message']  = '<p>There was a problem processing your paymen
 // Payment Success
 $_['ntp_success_heading_title'] = 'Your order has been placed!';
 $_['ntp_success_text_basket']   = 'Shopping Cart';
+$_['ntp_success_text_home'] = 'Shopping Cart';
 $_['ntp_success_text_checkout'] = 'Checkout';
 $_['ntp_success_text_success']  = 'Success';
 $_['ntp_success_text_customer'] = '<p>Your order has been successfully processed!</p><p>You can view your order history by going to the <a href="%s">my account</a> page and by clicking on <a href="%s">history</a>.</p><p>If your purchase has an associated download, you can go to the account <a href="%s">downloads</a> page to view them.</p><p>Please direct any questions you have to the <a href="%s">store owner</a>.</p><p>Thanks for shopping with us online!</p>';

@@ -191,15 +191,55 @@ class Pay extends \Opencart\System\Engine\Controller {
                 // Get order info
                 $ntpExtention = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Mobilpay($this->registry);
                 $ocOrderID = $ntpExtention->getRealOrderID($_GET['id']); 
-                echo "<pre>";
-                // var_dump($this->registry);
-                var_dump( $ocOrderID);
-                echo "</pre>";
+               
+                $this->load->model('checkout/order');
+                $order_info = $this->model_checkout_order->getOrder($ocOrderID);
+               
+                /**
+                 * Defined Status payment
+                 */        
+                $ntpStatus = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Lib\Status($this->registry);
+                $ntpStatus->posSignature = $this->config->get('payment_mobilpay_signature');
+                        
+                $isTestMod = $this->config->get('payment_mobilpay_test'); 
+                if($isTestMod) {
+                    $ntpStatus->isLive = false;
+                    $ntpStatus->apiKey = $this->config->get('payment_mobilpay_sandbox_apikey');
+                } else {
+                    $ntpStatus->isLive = true;
+                    $ntpStatus->apiKey = $this->config->get('payment_mobilpay_live_apikey');
+                }
+                
+                $ntpStatus->ntpID = $order_info['ntpID'];
+                $ntpStatus->orderID = $order_info['order_id'];
+
+                /**
+                 * Set payment status parameteres
+                 */
+                $orderStatusJson = $ntpStatus->setStatus();
+
+                /** Get Order Status */
+                $statusRespunse = $ntpStatus->getStatus($orderStatusJson);
+
+                $statusRespunseObj = json_decode($statusRespunse);
+               
+                switch ($statusRespunseObj->data->payment->status) {
+                    case 3:
+                    case 5:
+                        $this->success();
+                        break;
+                    default:
+                        $this->failur();
+                        break;
+                    }
+
             } else {
                 echo "Order ID is missing.";
+                $this->failur();
             }
         } else {
             echo "GET request is empty.";
+            $this->failur();
         }
 
         

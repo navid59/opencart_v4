@@ -181,6 +181,7 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
                 $comment = $this->language->get('text_payment_paid') . "\n";
                 
                 $this->model_checkout_order->addHistory($this->getRealOrderID($orderID), $this->config->get('payment_mobilpay_order_status_id'), $comment);  
+                $this->db->query("UPDATE " . DB_PREFIX . "order SET ntpID = '" . $this->db->escape($ntpID) . "' WHERE order_id = '" . (int)$orderID . "'");
                 break;
         } 
     }
