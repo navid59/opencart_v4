@@ -66,7 +66,6 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
 
 			$this->model_checkout_order->addHistory($this->session->data['order_id'], self::OC_ORDER_STATUS_PENDING , $comment, false);
 
-			// $json['redirect'] = $this->url->link('checkout/success', 'language=' . $this->config->get('config_language'), true);
             /**
              * Make request to pay and return payment URL
              */
@@ -88,12 +87,13 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
 
 	/**
      * Call Back is the IPN
-	 * http://localhost/open_v4.0.2/index.php?route=extension/mobilpay/payment/mobilpay.callback&language=en-gb
+	 * ex.  index.php?route=extension/mobilpay/payment/mobilpay.callback&language=en-gb
      */
     public function callback() {
-       /**
+        /**
          * get defined keys
          */
+
         
         $ntpIpn = new \Opencart\Catalog\Controller\Extension\Mobilpay\Payment\Lib\IPN($this->registry);
 
@@ -108,6 +108,7 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
         $ntpIpn->publicKeyStr = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy6pUDAFLVul4y499gz1P\ngGSvTSc82U3/ih3e5FDUs/F0Jvfzc4cew8TrBDrw7Y+AYZS37D2i+Xi5nYpzQpu7\nryS4W+qvgAA1SEjiU1Sk2a4+A1HeH+vfZo0gDrIYTh2NSAQnDSDxk5T475ukSSwX\nL9tYwO6CpdAv3BtpMT5YhyS3ipgPEnGIQKXjh8GMgLSmRFbgoCTRWlCvu7XOg94N\nfS8l4it2qrEldU8VEdfPDfFLlxl3lUoLEmCncCjmF1wRVtk4cNu+WtWQ4mBgxpt0\ntX2aJkqp4PV3o5kI4bqHq/MS7HVJ7yxtj/p8kawlVYipGsQj3ypgltQ3bnYV/LRq\n8QIDAQAB\n-----END PUBLIC KEY-----\n";
         $ipnResponse = $ntpIpn->verifyIPN();
         
+
         /**
          * Add Order History & change status
          */
@@ -116,10 +117,14 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
         $order_info = $this->model_checkout_order->getOrder($ocOrderID);
         
         // Add payment result to history
-        $this->model_checkout_order->addHistory($ocOrderID, $order_info['order_status_id'], $ipnResponse['errorMessage']);     
+        $comment = $ipnResponse['errorMessage'] ?? $this->language->get('text_payment_unknown_ipn_msg');
+        $comment .= "\n";
+
+        $this->model_checkout_order->addHistory($ocOrderID, $order_info['order_status_id'], $comment); 
         
-        // Get Payment Status
+        // Verify Payment Status form NTP
         $this->statusPayment($ipnResponse['rawData']['orderID'], $ipnResponse['rawData']['ntpID']);
+
 
 
         /**
@@ -161,8 +166,8 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
             $ntpStatus->apiKey = $this->config->get('payment_mobilpay_live_apikey');
         }
         
-        $ntpStatus->ntpID = $ntpID;
-        $ntpStatus->orderID = $orderID;
+        $ntpStatus->ntpID = $ntpID; // ??
+        $ntpStatus->orderID = $orderID; // ??        
 
         /**
          * Set payment status parameteres
@@ -171,17 +176,15 @@ class Mobilpay extends \Opencart\System\Engine\Controller {
 
 		/** Get Order Status */
 		$statusRespunse = $ntpStatus->getStatus($orderStatusJson);
-
         $statusRespunseObj = json_decode($statusRespunse);
          
+              
         switch ($statusRespunseObj->data->payment->status) {
             case 3:
             case 5:
-                // change order status and add history
+                // change order status to selected option by Admin and add history
                 $comment = $this->language->get('text_payment_paid') . "\n";
-                
                 $this->model_checkout_order->addHistory($this->getRealOrderID($orderID), $this->config->get('payment_mobilpay_order_status_id'), $comment);  
-                $this->db->query("UPDATE " . DB_PREFIX . "order SET ntpID = '" . $this->db->escape($ntpID) . "' WHERE order_id = '" . (int)$orderID . "'");
                 break;
         } 
     }

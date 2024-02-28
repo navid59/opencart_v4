@@ -16,14 +16,21 @@ class Start extends \Opencart\System\Engine\Controller {
 
     
 
-        // Send request json
+        /**
+         * Send request json 
+         * Old LIVE URL    : https://secure.mobilpay.ro/pay/payment/card/start
+         * Old sandbox URL : https://secure.sandbox.netopia-payments.com/payment/card/start
+         * New Sandbox URL : https://secure-sandbox.netopia-payments.com/payment/card/start
+         * https://secure.mobilpay.ro/pay/payment/card/start
+         */ 
+
         protected function sendRequest($jsonStr) {
             if(!isset($this->apiKey) || is_null($this->apiKey)) {
                 throw new \Exception('INVALID_APIKEY');
                 exit;
             }
 
-            $url = $this->isLive ? 'https://secure.mobilpay.ro/pay/payment/card/start' : 'https://secure.sandbox.netopia-payments.com/payment/card/start';
+            $url = $this->isLive ? 'https://secure.netopia-payments.com/payment/card/start' : 'https://secure.sandbox.netopia-payments.com/payment/card/start';
             $ch = curl_init($url);
             
             $headers  = [

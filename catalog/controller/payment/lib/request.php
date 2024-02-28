@@ -107,17 +107,7 @@ class Request extends Start {
     }
 
     public function startPayment(){
-    // Un commented for debuging
-    //   echo "<pre>";
-    //   var_dump($this->jsonRequest);
-    //   echo "<hr>";
-    //   echo $this->apiKey;
-    //   echo "<hr>";
-    //   echo $this->posSignature;
-    //   echo "</pre>";
-
-    //   die("xxxx");
       $result = $this->sendRequest($this->jsonRequest);
       return($result);
-    }    
+    }
 }

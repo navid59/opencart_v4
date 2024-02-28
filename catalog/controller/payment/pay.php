@@ -114,7 +114,7 @@ class Pay extends \Opencart\System\Engine\Controller {
             'emailTemplate' => "",
             'notifyUrl'     => $this->url->link('extension/mobilpay/payment/mobilpay.callback'),
             'redirectUrl'   => $this->url->link('extension/mobilpay/payment/pay.redirect'),
-            'cancelUrl'   => $this->url->link('extension/mobilpay/payment/pay.cancel', 'id='.$orderData->orderID, true),
+            'cancelUrl'   => $this->url->link('extension/mobilpay/payment/pay.cancel', 'id='.$orderData->orderID.'&language=' . $this->config->get('config_language'), true),
             'language'      => "RO"
             ];
 
@@ -128,7 +128,6 @@ class Pay extends \Opencart\System\Engine\Controller {
          */
         $startResult = $payRequest->startPayment();
 
-        ////////////////
         // /**
         //  * Result of start action is in jason format
         //  * get PaymentURL & do redirect
@@ -156,7 +155,10 @@ class Pay extends \Opencart\System\Engine\Controller {
                 $responseArr['status'] = 1; 
                 $responseArr['code'] = $resultObj->data->error->code; 
                 $responseArr['msg'] = $errorMsg;
-                $responseArr['url'] = $resultObj->data->payment->paymentURL;                
+                $responseArr['url'] = $resultObj->data->payment->paymentURL;  
+
+                // Update Order for ntpID
+                $this->setNtpID($order_info['order_id'], $resultObj->data->payment->ntpID );
             } else {
                 $responseArr['status'] = 0; 
                 $responseArr['code'] = ''; 
@@ -234,24 +236,19 @@ class Pay extends \Opencart\System\Engine\Controller {
                     }
 
             } else {
-                echo "Order ID is missing.";
-                $this->failur();
+                $msg =  "Order ID is missing.";
+                $this->failur($msg);
             }
         } else {
-            echo "GET request is empty.";
-            $this->failur();
-        }
-
-        
-		// $this->failur();
-		// $this->success();
-        
+            $msg = "GET request is empty.";
+            $this->failur($msg);
+        }        
 	}
 
     /**
      * Failur Page
      */
-    public function failur() {
+    public function failur($ntpMsg = '') {
         // Load Language
         $this->load->language('extension/mobilpay/payment/mobilpay');
 
@@ -362,13 +359,6 @@ class Pay extends \Opencart\System\Engine\Controller {
         
 	}
 
-    /**
-     * Test
-     * Will be delete
-     */
-    public function test() {
-        $this->db->query("ALTER TABLE `" . DB_PREFIX . "order` ADD COLUMN ntpID VARCHAR(50) DEFAULT NULL COMMENT 'NETOPIA Payments ID';");
-	}
 
     /**
      * Generate Random unique number
@@ -402,11 +392,20 @@ class Pay extends \Opencart\System\Engine\Controller {
 
 
     /**
-     * Look's Like geting Version is not implimented in Opencart 
+     * Look's Like geting Version is not implimented in Opencart
+     * OpenCart version not found!
+     * Static text 
      */
     public function getOpenCartVersion() {
-        return "OpenCart version not found! - Static text";
+        return "Version 4.x";
     }
 
+    /**
+     * Update order for ntpID
+     */
+    public function setNtpID($orderID, $ntpID ) {
+        // Register ntpID in Order
+        $this->db->query("UPDATE " . DB_PREFIX . "order SET ntpID = '" . $this->db->escape($ntpID) . "' WHERE order_id = '" . (int)$orderID . "'");
+    }
 
 }
